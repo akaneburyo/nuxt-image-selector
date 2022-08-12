@@ -1,160 +1,114 @@
 <template>
   <div class="container">
-    <CBox
-      v-bind="mainStyles[colorMode]"
-      d="flex"
+    <CStack
+      spacing="6"
+      direction="column"
       w="100vw"
       h="100vh"
-      flex-dir="column"
-      justify-content="center"
+      align="center"
+      justify="center"
     >
-      <CHeading text-align="center" mb="4"> ⚡️ Hello chakra-ui/vue </CHeading>
-      <CFlex justify="center" direction="column" align="center">
-        <CBox mb="3">
-          <CIconButton
-            mr="3"
-            :icon="colorMode === 'light' ? 'moon' : 'sun'"
-            :aria-label="`Switch to ${
-              colorMode === 'light' ? 'dark' : 'light'
-            } mode`"
-            @click="toggleColorMode"
-          />
-          <CButton left-icon="info" variant-color="blue" @click="showToast">
-            Show Toast
-          </CButton>
-        </CBox>
-        <CAvatarGroup>
-          <CAvatar
-            name="Evan You"
-            alt="Evan You"
-            src="https://pbs.twimg.com/profile_images/1206997998900850688/cTXTQiHm_400x400.jpg"
-          >
-            <CAvatarBadge size="1.0em" bg="green.500" />
-          </CAvatar>
-          <CAvatar
-            name="Jonathan Bakebwa"
-            alt="Jonathan Bakebwa"
-            src="https://res.cloudinary.com/xtellar/image/upload/v1572857445/me_zqos4e.jpg"
-          >
-            <CAvatarBadge size="1.0em" bg="green.500" />
-          </CAvatar>
-          <CAvatar
-            name="Segun Adebayo"
-            alt="Segun Adebayo"
-            src="https://pbs.twimg.com/profile_images/1169353373012897802/skPUWd6e_400x400.jpg"
-          >
-            <CAvatarBadge size="1.0em" bg="green.500" />
-          </CAvatar>
-          <CAvatar src="pop">
-            <CAvatarBadge size="1.0em" border-color="papayawhip" bg="tomato" />
-          </CAvatar>
-        </CAvatarGroup>
-        <CButton
-          left-icon="close"
-          variant-color="red"
-          mt="3"
-          @click="showModal = true"
+      <!-- Title section  -->
+      <CStack spacing="4" direction="row" align="center">
+        <CHeading>nuxt-image-selector</CHeading>
+        <CLink
+          is-external
+          href="https://github.com/akaneburyo/nuxt-image-selector"
         >
-          Delete Account
-        </CButton>
-        <CModal :is-open="showModal">
-          <CModalOverlay />
-          <CModalContent>
-            <CModalHeader>Are you sure?</CModalHeader>
-            <CModalBody>Deleting user cannot be undone</CModalBody>
-            <CModalFooter>
-              <CButton @click="showModal = false"> Cancel </CButton>
-              <CButton
-                margin-left="3"
-                variant-color="red"
-                @click="showModal = false"
-              >
-                Delete User
-              </CButton>
-            </CModalFooter>
-            <CModalCloseButton @click="showModal = false" />
-          </CModalContent>
-        </CModal>
+          <CIcon size="6" name="github" />
+        </CLink>
+      </CStack>
+
+      <!-- Main section -->
+      <CFlex justify="center" direction="row" align="stretch">
+        <CBox w="160px" bg="gray.50" :p="4">
+          <CText font-size="md">商品画像</CText>
+        </CBox>
+
+        <CStack>
+          <CSimpleGrid :p="4" :columns="4" :spacing="4" min-width="512px">
+            <SelectedImageCard :imageUrl="'https://placehold.jp/150x150.png'" />
+            <SelectedImageCard :imageUrl="'https://placehold.jp/150x150.png'" />
+            <SelectedImageCard :imageUrl="'https://placehold.jp/150x150.png'" />
+            <SelectedImageCard :imageUrl="'https://placehold.jp/150x150.png'" />
+            <SelectedImageCard :imageUrl="'https://placehold.jp/150x150.png'" />
+
+            <AddButton @click="addimage" />
+          </CSimpleGrid>
+
+          <CButton variant-color="green" :is-loading="isLoading" @click="submit"
+            >保存</CButton
+          >
+        </CStack>
       </CFlex>
-    </CBox>
+    </CStack>
   </div>
 </template>
 
-<script lang="js">
+<script lang="ts">
+import Vue from 'vue'
 import {
   CBox,
-  CButton,
-  CAvatarGroup,
-  CAvatar,
-  CAvatarBadge,
-  CModal,
-  CModalContent,
-  CModalOverlay,
-  CModalHeader,
-  CModalFooter,
-  CModalBody,
-  CModalCloseButton,
-  CIconButton,
   CFlex,
-  CHeading
+  CStack,
+  CSimpleGrid,
+  CHeading,
+  CButton,
+  CText,
+  CIcon,
+  CLink,
 } from '@chakra-ui/vue'
 
-export default {
+import SelectedImageCard from '@/components/ProductImage/SelectedImageCard/Card.vue'
+import AddButton from '@/components/ProductImage/AddButton/Button.vue'
+
+type Image = {
+  id: string
+  raw: File
+  url: string
+  order: number
+}
+
+type Data = {
+  isLoading: boolean
+  selectedImages: Image[]
+}
+
+export default Vue.extend({
   name: 'IndexPage',
   components: {
     CBox,
+    CSimpleGrid,
     CButton,
-    CAvatarGroup,
-    CAvatar,
-    CAvatarBadge,
-    CModal,
-    CModalContent,
-    CModalOverlay,
-    CModalHeader,
-    CModalFooter,
-    CModalBody,
-    CModalCloseButton,
-    CIconButton,
     CFlex,
-    CHeading
+    CStack,
+    CHeading,
+    CText,
+    CIcon,
+    CLink,
+    SelectedImageCard,
+    AddButton,
   },
-  inject: ['$chakraColorMode', '$toggleColorMode'],
-  data () {
+  data(): Data {
     return {
-      showModal: false,
-      mainStyles: {
-        dark: {
-          bg: 'gray.700',
-          color: 'whiteAlpha.900'
-        },
-        light: {
-          bg: 'white',
-          color: 'gray.900'
-        }
-      }
+      isLoading: false,
+      selectedImages: [],
     }
   },
-  computed: {
-    colorMode () {
-      return this.$chakraColorMode()
-    },
-    theme () {
-      return this.$chakraTheme()
-    },
-    toggleColorMode () {
-      return this.$toggleColorMode
-    }
-  },
+
   methods: {
-    showToast () {
-      this.$toast({
-        title: 'Account created.',
-        description: "We've created your account for you.",
-        status: 'success',
-        duration: 10000,
-        isClosable: true
-      })
-    }
-  }
-}
+    addimage() {
+      // TODO
+    },
+
+    submit() {
+      // TODO: submit
+      this.isLoading = false
+
+      setTimeout(() => {
+        this.isLoading = false
+      }, 2500)
+    },
+  },
+})
 </script>
