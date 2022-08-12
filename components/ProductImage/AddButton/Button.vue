@@ -1,3 +1,23 @@
+<script lang="ts">
+import Vue from 'vue'
+import { CBox, CFlex, CAspectRatioBox, CIcon, CText } from '@chakra-ui/vue'
+
+export default Vue.extend({
+  components: {
+    CBox,
+    CFlex,
+    CAspectRatioBox,
+    CIcon,
+    CText,
+  },
+  methods: {
+    onclick() {
+      this.$emit('click')
+    },
+  },
+})
+</script>
+
 <template>
   <CAspectRatioBox
     max-w="160px"
@@ -22,23 +42,3 @@
     </CFlex>
   </CAspectRatioBox>
 </template>
-
-<script lang="ts">
-import Vue from 'vue'
-import { CBox, CFlex, CAspectRatioBox, CIcon, CText } from '@chakra-ui/vue'
-
-export default Vue.extend({
-  components: {
-    CBox,
-    CFlex,
-    CAspectRatioBox,
-    CIcon,
-    CText,
-  },
-  methods: {
-    onclick() {
-      this.$emit('click')
-    },
-  },
-})
-</script>
