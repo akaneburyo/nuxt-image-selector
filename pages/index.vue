@@ -1,50 +1,3 @@
-<template>
-  <div class="container">
-    <CStack
-      spacing="6"
-      direction="column"
-      w="100vw"
-      h="100vh"
-      align="center"
-      justify="center"
-    >
-      <!-- Title section  -->
-      <CStack spacing="4" direction="row" align="center">
-        <CHeading>nuxt-image-selector</CHeading>
-        <CLink
-          is-external
-          href="https://github.com/akaneburyo/nuxt-image-selector"
-        >
-          <CIcon size="6" name="github" />
-        </CLink>
-      </CStack>
-
-      <!-- Main section -->
-      <CFlex justify="center" direction="row" align="stretch">
-        <CBox w="160px" bg="gray.50" :p="4">
-          <CText font-size="md">商品画像</CText>
-        </CBox>
-
-        <CStack>
-          <CSimpleGrid :p="4" :columns="4" :spacing="4" min-width="512px">
-            <SelectedImageCard :imageUrl="'https://placehold.jp/150x150.png'" />
-            <SelectedImageCard :imageUrl="'https://placehold.jp/150x150.png'" />
-            <SelectedImageCard :imageUrl="'https://placehold.jp/150x150.png'" />
-            <SelectedImageCard :imageUrl="'https://placehold.jp/150x150.png'" />
-            <SelectedImageCard :imageUrl="'https://placehold.jp/150x150.png'" />
-
-            <AddButton @click="addimage" />
-          </CSimpleGrid>
-
-          <CButton variant-color="green" :is-loading="isLoading" @click="submit"
-            >保存</CButton
-          >
-        </CStack>
-      </CFlex>
-    </CStack>
-  </div>
-</template>
-
 <script lang="ts">
 import Vue from 'vue'
 import {
@@ -97,8 +50,31 @@ export default Vue.extend({
   },
 
   methods: {
-    addimage() {
-      // TODO
+    addImage() {
+      if (this.$refs.input) {
+        ;(this.$refs.input as HTMLInputElement).click()
+      }
+    },
+
+    onImageSelected(event: Event) {
+      // TODO: eventに適切な方を設定し、asを使わないように修正する
+      const input = event.target as HTMLInputElement
+
+      if (input.files?.length && input.files?.length > 0) {
+        Array.from(input.files).forEach((file) => {
+          console.log(file)
+          // TODO: util関数の型付け
+          this.selectedImages.push({
+            id: (this as any).$getRandomString(),
+            raw: file,
+            url: URL.createObjectURL(file),
+            order: 0,
+          })
+        })
+      }
+
+      input.files = null
+      input.value = ''
     },
 
     submit() {
@@ -112,3 +88,68 @@ export default Vue.extend({
   },
 })
 </script>
+
+<template>
+  <div class="container">
+    <CStack
+      spacing="6"
+      direction="column"
+      w="100vw"
+      h="100vh"
+      align="center"
+      justify="center"
+    >
+      <!-- Title section  -->
+      <CStack spacing="4" direction="row" align="center">
+        <CHeading>nuxt-image-selector</CHeading>
+        <CLink
+          is-external
+          href="https://github.com/akaneburyo/nuxt-image-selector"
+        >
+          <CIcon size="6" name="github" />
+        </CLink>
+      </CStack>
+
+      <!-- Main section -->
+      <CFlex justify="center" direction="row" align="stretch">
+        <CBox w="160px" bg="gray.50" :p="4">
+          <CText font-size="md">商品画像</CText>
+        </CBox>
+
+        <CStack
+          :p="4"
+          spacing="4"
+          align="center"
+          border="1px"
+          borderColor="gray.100"
+        >
+          <CSimpleGrid :columns="4" :spacing="4" w="512px">
+            <SelectedImageCard
+              v-for="image in selectedImages"
+              :key="image.id"
+              :imageUrl="image.url"
+            />
+            <AddButton @click="addImage" />
+          </CSimpleGrid>
+
+          <input
+            ref="input"
+            type="file"
+            accept="image/jpeg, image/jpg, image/png"
+            multiple
+            style="display: none"
+            @change="onImageSelected"
+          />
+          <CButton
+            variantColor="green"
+            w="120px"
+            :isLoading="isLoading"
+            @click="submit"
+          >
+            保存
+          </CButton>
+        </CStack>
+      </CFlex>
+    </CStack>
+  </div>
+</template>
