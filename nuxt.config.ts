@@ -44,6 +44,8 @@ export default {
     '@chakra-ui/nuxt',
     // https://go.nuxtjs.dev/emotion
     '@nuxtjs/emotion',
+    // https://axios.nuxtjs.org/
+    '@nuxtjs/axios',
   ],
 
   // Chakra configuration
