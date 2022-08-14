@@ -31,7 +31,11 @@ export default Vue.extend({
     },
   },
   computed: {},
-  methods: {},
+  methods: {
+    action(type: string) {
+      this.$emit(type)
+    },
+  },
 })
 </script>
 
@@ -53,16 +57,16 @@ export default Vue.extend({
             設定
           </CMenuButton>
           <CMenuList minW="auto" w="120px" :placement="'bottom-end'">
-            <CMenuItem fontSize="sm">
+            <CMenuItem fontSize="sm" @click="action('toLeft')">
               <CIcon size="4" name="arrow-left" mr="2" />
               左へ移動
             </CMenuItem>
-            <CMenuItem fontSize="sm">
+            <CMenuItem fontSize="sm" @click="action('toRight')">
               <CIcon size="4" name="arrow-right" mr="2" />
               右へ移動
             </CMenuItem>
             <CMenuDivider />
-            <CMenuItem color="red" fontSize="sm">
+            <CMenuItem color="red" fontSize="sm" @click="action('onRemoved')">
               <CIcon size="4" name="trash-can" mr="2" />
               削除
             </CMenuItem>

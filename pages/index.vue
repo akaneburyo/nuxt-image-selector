@@ -17,7 +17,7 @@ import AddButton from '@/components/ProductImage/AddButton/Button.vue'
 
 type Image = {
   id: string
-  raw: File
+  raw?: File
   url: string
   order: number
 }
@@ -61,20 +61,35 @@ export default Vue.extend({
       const input = event.target as HTMLInputElement
 
       if (input.files?.length && input.files?.length > 0) {
-        Array.from(input.files).forEach((file) => {
-          console.log(file)
+        const max = this.selectedImages.length
+        Array.from(input.files).forEach((file, index) => {
           // TODO: util関数の型付け
           this.selectedImages.push({
             id: (this as any).$getRandomString(),
             raw: file,
             url: URL.createObjectURL(file),
-            order: 0,
+            order: max + index,
           })
         })
       }
 
       input.files = null
       input.value = ''
+    },
+
+    moveToLeft(id: string) {
+      // TODO
+      console.log(`move to left: ${id}`)
+    },
+
+    moveToRight(id: string) {
+      // TODO
+      console.log(`move to right: ${id}`)
+    },
+
+    onRemoved(id: string) {
+      // TODO
+      console.log(`on removed: ${id}`)
     },
 
     submit() {
@@ -123,11 +138,14 @@ export default Vue.extend({
           border="1px"
           borderColor="gray.100"
         >
-          <CSimpleGrid :columns="4" :spacing="4" w="512px">
+          <CSimpleGrid :columns="4" :spacing="4" w="640px">
             <SelectedImageCard
               v-for="image in selectedImages"
               :key="image.id"
               :imageUrl="image.url"
+              @toLeft="moveToLeft(image.id)"
+              @toRight="moveToRight(image.id)"
+              @onRemoved="onRemoved(image.id)"
             />
             <AddButton @click="addImage" />
           </CSimpleGrid>
