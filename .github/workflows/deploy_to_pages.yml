@@ -1,0 +1,42 @@
+name: Deploy To Github Pages
+
+env:
+  YARN_CACHE_FOLDER: .cache/yarn
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup
+        uses: actions/setup-node@v2
+        with:
+          node-version: '16'
+
+      - name: Cache configration
+        uses: actions/cache@v2
+        with:
+          path: ${YARN_CACHE_FOLDER}
+          key: ${{ runner.os }}-yarn-cache-v1
+      - run: yarn install
+
+      # - name: Test
+      #   run: yarn test:ci
+      - name: Build
+        run: npm run generate
+
+      - name: Deploy
+        uses: peaceiris/actions-gh-pages@v3
+        if: ${{ github.ref == 'refs/heads/main' }}
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dist
