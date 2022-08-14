@@ -25,6 +25,7 @@ type Image = {
 type Data = {
   isLoading: boolean
   selectedImages: Image[]
+  removedImages: Image[]
 }
 
 export default Vue.extend({
@@ -46,6 +47,7 @@ export default Vue.extend({
     return {
       isLoading: false,
       selectedImages: [],
+      removedImages: [],
     }
   },
 
@@ -77,23 +79,44 @@ export default Vue.extend({
     },
 
     moveToLeft(id: string) {
-      // TODO
-      console.log(`move to left: ${id}`)
+      const target = this.selectedImages.find((image) => image.id === id)
+      const prevImage =
+        target &&
+        this.selectedImages.find((image) => image.order === target.order - 1)
+
+      if (target && prevImage) {
+        target.order -= 1
+        prevImage.order += 1
+      }
+      this.selectedImages.sort((a, b) => a.order - b.order)
     },
 
     moveToRight(id: string) {
-      // TODO
-      console.log(`move to right: ${id}`)
+      const target = this.selectedImages.find((image) => image.id === id)
+      const nextImage =
+        target &&
+        this.selectedImages.find((image) => image.order === target.order + 1)
+
+      if (target && nextImage) {
+        target.order += 1
+        nextImage.order -= 1
+      }
+      this.selectedImages.sort((a, b) => a.order - b.order)
     },
 
     onRemoved(id: string) {
-      // TODO
-      console.log(`on removed: ${id}`)
+      const target = this.selectedImages.find((image) => image.id === id)
+      if (target) {
+        this.removedImages.push(target)
+        this.selectedImages = this.selectedImages
+          .filter((image) => image.id !== id)
+          .map((image, index) => ({ ...image, order: index }))
+      }
     },
 
     submit() {
       // TODO: submit
-      this.isLoading = false
+      this.isLoading = true
 
       setTimeout(() => {
         this.isLoading = false
