@@ -4,6 +4,8 @@ import {
   faTrashCan,
 } from '@fortawesome/free-solid-svg-icons'
 
+const projectName = 'nuxt-image-selector'
+
 export default {
   // Disable server-side rendering: https://go.nuxtjs.dev/ssr-mode
   ssr: false,
@@ -20,7 +22,13 @@ export default {
       { hid: 'description', name: 'description', content: '' },
       { name: 'format-detection', content: 'telephone=no' },
     ],
-    link: [{ rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }],
+    link: [
+      {
+        rel: 'icon',
+        type: 'image/x-icon',
+        href: `/${projectName}/favicon.ico`,
+      },
+    ],
   },
 
   // Global CSS: https://go.nuxtjs.dev/config-css
@@ -47,6 +55,10 @@ export default {
     // https://axios.nuxtjs.org/
     '@nuxtjs/axios',
   ],
+
+  router: {
+    base: `/${projectName}/`,
+  },
 
   // Chakra configuration
   chakra: {
