@@ -27,7 +27,7 @@ export default {
   css: [],
 
   // Plugins to run before rendering page: https://go.nuxtjs.dev/config-plugins
-  plugins: ['@/plugins/utils'],
+  plugins: ['@/plugins/utils', '@/plugins/constants'],
 
   // Auto import components: https://go.nuxtjs.dev/config-components
   components: true,
@@ -44,6 +44,8 @@ export default {
     '@chakra-ui/nuxt',
     // https://go.nuxtjs.dev/emotion
     '@nuxtjs/emotion',
+    // https://axios.nuxtjs.org/
+    '@nuxtjs/axios',
   ],
 
   // Chakra configuration

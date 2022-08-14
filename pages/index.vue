@@ -10,22 +10,37 @@ import {
   CText,
   CIcon,
   CLink,
+  CModal,
+  CModalOverlay,
+  CModalContent,
+  CModalHeader,
+  CModalBody,
+  CModalCloseButton,
+  CCode,
 } from '@chakra-ui/vue'
 
 import SelectedImageCard from '@/components/ProductImage/SelectedImageCard/Card.vue'
 import AddButton from '@/components/ProductImage/AddButton/Button.vue'
 
-type Image = {
-  id: string
-  raw?: File
-  url: string
-  order: number
+// Types
+import type {
+  Image,
+  PostOrdersRequest,
+  DeleteImageRequest,
+  PostNewImageRequest,
+} from '@/types/api'
+
+type ModalContent = {
+  isOpen: boolean
+  title: string
+  code?: string
 }
 
 type Data = {
-  isLoading: boolean
   selectedImages: Image[]
   removedImages: Image[]
+  isLoading: boolean
+  modalContent?: ModalContent
 }
 
 export default Vue.extend({
@@ -40,14 +55,22 @@ export default Vue.extend({
     CText,
     CIcon,
     CLink,
+    CModal,
+    CModalOverlay,
+    CModalContent,
+    CModalHeader,
+    CModalBody,
+    CModalCloseButton,
+    CCode,
     SelectedImageCard,
     AddButton,
   },
   data(): Data {
     return {
-      isLoading: false,
       selectedImages: [],
       removedImages: [],
+      isLoading: false,
+      modalContent: undefined,
     }
   },
 
@@ -68,7 +91,7 @@ export default Vue.extend({
           this.selectedImages.push({
             id: this.$utils.getRandomString(),
             raw: file,
-            url: URL.createObjectURL(file),
+            previewUrl: URL.createObjectURL(file),
             order: max + index,
           })
         })
@@ -114,13 +137,76 @@ export default Vue.extend({
       }
     },
 
-    submit() {
-      // TODO: submit
+    async submit() {
       this.isLoading = true
 
-      setTimeout(() => {
-        this.isLoading = false
-      }, 2500)
+      // register new images
+      const newImagesRequests: PostNewImageRequest[] = this.selectedImages
+        .filter((image) => !!image.raw)
+        .map((image) => {
+          const body: PostNewImageRequest = new FormData()
+          body.append('id', image.id)
+          image.raw && body.append('raw', image.raw)
+          return body
+        })
+
+      // delete images
+      const deletedImagesRequests: DeleteImageRequest[] =
+        this.removedImages.map((image) => ({ id: image.id }))
+
+      // register orders
+      const ordersRequest: PostOrdersRequest = {
+        images: this.selectedImages.map((image) => ({
+          id: image.id,
+          order: image.order,
+        })),
+      }
+
+      await Promise.all([
+        ...newImagesRequests.map((body) =>
+          this.$axios.post(this.$constants.api.path.postNewImage, body, {
+            headers: {
+              'content-type': 'multipart/form-data',
+            },
+          })
+        ),
+        ...deletedImagesRequests.map((body) =>
+          this.$axios.delete(
+            this.$constants.api.path.deleteImage.replace(':id', body.id)
+          )
+        ),
+        this.$axios.post(this.$constants.api.path.postOrders, ordersRequest),
+      ])
+        .catch((e) => {
+          this.$toast({
+            title: 'Error.',
+            description: JSON.stringify(e),
+            status: 'error',
+            duration: 10000,
+          })
+        })
+        .then((results) => {
+          this.openModal({
+            title: 'Success.',
+            code: results
+              ?.map((result) => JSON.stringify(result.data, null, 2))
+              .join('\n\n'),
+          })
+        })
+        .finally(() => {
+          this.isLoading = false
+        })
+    },
+
+    openModal(content: Omit<ModalContent, 'isOpen'>) {
+      this.modalContent = {
+        ...content,
+        isOpen: true,
+      }
+    },
+
+    closeModal() {
+      if (this.modalContent) this.modalContent.isOpen = false
     },
   },
 })
@@ -164,7 +250,7 @@ export default Vue.extend({
             <SelectedImageCard
               v-for="image in selectedImages"
               :key="image.id"
-              :imageUrl="image.url"
+              :imageUrl="image.previewUrl"
               @toLeft="moveToLeft(image.id)"
               @toRight="moveToRight(image.id)"
               @onRemoved="onRemoved(image.id)"
@@ -191,5 +277,22 @@ export default Vue.extend({
         </CStack>
       </CFlex>
     </CStack>
+
+    <!-- Modal -->
+    <CModal
+      :is-open="modalContent?.isOpen"
+      :on-close="closeModal"
+      size="full"
+      scrollBehavior="inside"
+    >
+      <CModalContent ref="content">
+        <CModalHeader>{{ modalContent?.title }}</CModalHeader>
+        <CModalCloseButton />
+        <CModalBody>
+          <CCode whiteSpace="pre-wrap">{{ modalContent?.code }}</CCode>
+        </CModalBody>
+      </CModalContent>
+      <CModalOverlay />
+    </CModal>
   </div>
 </template>
