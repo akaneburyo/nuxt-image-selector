@@ -177,20 +177,20 @@ export default Vue.extend({
         ),
         this.$axios.post(this.$constants.api.path.postOrders, ordersRequest),
       ])
-        .catch((e) => {
-          this.$toast({
-            title: 'Error.',
-            description: JSON.stringify(e),
-            status: 'error',
-            duration: 10000,
-          })
-        })
         .then((results) => {
           this.openModal({
             title: 'Success.',
             code: results
               ?.map((result) => JSON.stringify(result.data, null, 2))
               .join('\n\n'),
+          })
+        })
+        .catch((e) => {
+          this.$toast({
+            title: 'Error.',
+            description: JSON.stringify(e),
+            status: 'error',
+            duration: 10000,
           })
         })
         .finally(() => {
