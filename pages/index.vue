@@ -17,7 +17,7 @@ import AddButton from '@/components/ProductImage/AddButton/Button.vue'
 
 type Image = {
   id: string
-  raw: File
+  raw?: File
   url: string
   order: number
 }
@@ -25,6 +25,7 @@ type Image = {
 type Data = {
   isLoading: boolean
   selectedImages: Image[]
+  removedImages: Image[]
 }
 
 export default Vue.extend({
@@ -46,6 +47,7 @@ export default Vue.extend({
     return {
       isLoading: false,
       selectedImages: [],
+      removedImages: [],
     }
   },
 
@@ -61,14 +63,13 @@ export default Vue.extend({
       const input = event.target as HTMLInputElement
 
       if (input.files?.length && input.files?.length > 0) {
-        Array.from(input.files).forEach((file) => {
-          console.log(file)
-          // TODO: util関数の型付け
+        const max = this.selectedImages.length
+        Array.from(input.files).forEach((file, index) => {
           this.selectedImages.push({
-            id: (this as any).$getRandomString(),
+            id: this.$utils.getRandomString(),
             raw: file,
             url: URL.createObjectURL(file),
-            order: 0,
+            order: max + index,
           })
         })
       }
@@ -77,9 +78,45 @@ export default Vue.extend({
       input.value = ''
     },
 
+    moveToLeft(id: string) {
+      const target = this.selectedImages.find((image) => image.id === id)
+      const prevImage =
+        target &&
+        this.selectedImages.find((image) => image.order === target.order - 1)
+
+      if (target && prevImage) {
+        target.order -= 1
+        prevImage.order += 1
+      }
+      this.selectedImages.sort((a, b) => a.order - b.order)
+    },
+
+    moveToRight(id: string) {
+      const target = this.selectedImages.find((image) => image.id === id)
+      const nextImage =
+        target &&
+        this.selectedImages.find((image) => image.order === target.order + 1)
+
+      if (target && nextImage) {
+        target.order += 1
+        nextImage.order -= 1
+      }
+      this.selectedImages.sort((a, b) => a.order - b.order)
+    },
+
+    onRemoved(id: string) {
+      const target = this.selectedImages.find((image) => image.id === id)
+      if (target) {
+        this.removedImages.push(target)
+        this.selectedImages = this.selectedImages
+          .filter((image) => image.id !== id)
+          .map((image, index) => ({ ...image, order: index }))
+      }
+    },
+
     submit() {
       // TODO: submit
-      this.isLoading = false
+      this.isLoading = true
 
       setTimeout(() => {
         this.isLoading = false
@@ -123,11 +160,14 @@ export default Vue.extend({
           border="1px"
           borderColor="gray.100"
         >
-          <CSimpleGrid :columns="4" :spacing="4" w="512px">
+          <CSimpleGrid :columns="4" :spacing="4" w="640px">
             <SelectedImageCard
               v-for="image in selectedImages"
               :key="image.id"
               :imageUrl="image.url"
+              @toLeft="moveToLeft(image.id)"
+              @toRight="moveToRight(image.id)"
+              @onRemoved="onRemoved(image.id)"
             />
             <AddButton @click="addImage" />
           </CSimpleGrid>
