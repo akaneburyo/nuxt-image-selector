@@ -63,9 +63,8 @@ export default Vue.extend({
       if (input.files?.length && input.files?.length > 0) {
         const max = this.selectedImages.length
         Array.from(input.files).forEach((file, index) => {
-          // TODO: util関数の型付け
           this.selectedImages.push({
-            id: (this as any).$getRandomString(),
+            id: this.$utils.getRandomString(),
             raw: file,
             url: URL.createObjectURL(file),
             order: max + index,
